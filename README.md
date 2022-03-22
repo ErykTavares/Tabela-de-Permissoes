@@ -5,7 +5,7 @@
 - **Desafio de uma Vaga de Front-End Web React, nesse projeto deve-se criar uma tabela com varios titulos e permissões, cada permissão e uma checkbox que pode ser marcada e desmarcada, tem um sistema de hierarquia  entre os títulos, se você marcar o titulo principal em determinada permissão os subordinados dele viram ser marcados também e algo clicar no botão Cadastrar devera ser mostrado no console cada titulo e suas permissões contendo valor true ou false**
 
 ### **Site do Projeto**
- ****
+ **https://tabeladepermissoes.netlify.app/**
 
 ### **Exemplo do Projeto**
 
