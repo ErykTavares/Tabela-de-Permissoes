@@ -2,8 +2,6 @@ import React from "react";
 import styled from "styled-components";
 
 const CheckBox = ({ id, name, handleChange, state }) => {
-
-
   return (
     <CheckBoxStyled
       type="checkbox"

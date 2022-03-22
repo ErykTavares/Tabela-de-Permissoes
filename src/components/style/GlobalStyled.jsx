@@ -30,4 +30,8 @@ export const GlobalStyled = createGlobalStyle`
         text-decoration:none;
     }
 
+    .Invert{
+    transform: rotate(180deg);
+  }
+
 `

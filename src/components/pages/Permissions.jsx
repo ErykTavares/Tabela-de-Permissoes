@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
 import CheckBox from "../CheckBox";
-import { ReactComponent as Arrow } from "../assets/arrow-down-svgrepo-com.svg";
+import Arrow from "../Arrow";
+import Button from "../ButtonSubmit";
 
 const selectionarray = {
   name: "Todos",
@@ -170,98 +171,150 @@ const selectionarray = {
   },
 };
 
+let obj = {};
+selectionarray.subselections.map((item) => {
+  return (obj[item.name] = true);
+});
+
 const Permissions = () => {
   const [select, setSelect] = React.useState();
+  const [collapsed, setCollapsed] = React.useState();
   const [refresh, setRefresh] = React.useState(false);
 
-  useEffect(() => setSelect(selectionarray));
+  React.useEffect(() => {
+    setSelect(selectionarray);
+    setCollapsed(obj);
+  });
 
   function handleChange({ target }) {
     let tempSelectionArray = select;
-    let newpermissionskey = (key, value, obj) => {
-      obj[key] = value;
+    let tempSubselections = tempSelectionArray.subselections;
+    let tempSub = tempSubselections.filter((item) => {
+      let obj;
+      item.subselections.filter((fil) => {
+        if (fil.name === target.id) {
+          obj = item;
+        } else {
+          return null;
+        }
+      });
       return obj;
+    })[0];
+    let tempChilds = tempSubselections.filter((fil) => {
+      let list;
+      fil.subselections.filter((sub) => {
+        return sub.name === target.id ? (list = fil) : null;
+      });
+      return list;
+    })[0];
+
+    let setpermissions = (permissions, state) => {
+      Object.keys(permissions).filter((fil) =>
+        fil === target.name ? (permissions[fil] = state) : null
+      );
+      return permissions;
     };
-    let newsubs = (subs, permissionsnow) =>
-      subs.map((item) => {
-        item.permissions = permissionsnow;
+
+    let setSubselectionPermissions = (subs, state) => {
+      return subs.map((item) => {
+        item.permissions = setpermissions(item.permissions, state);
         return item.hasOwnProperty("subselections")
-          ? ((item.subselections = newsubs(item.subselections, permissionsnow)),
+          ? ((item.subselections = setSubselectionPermissions(
+              item.subselections,
+              state
+            )),
             item)
           : item;
       });
-    let tempSubSelection = (sublist, state) => {
-      return sublist.map((sub) => {
-        return sub.name === target.id
-          ? ((sub.permissions = newpermissionskey(
-              target.name,
-              state,
-              sub.permissions
-            )),
-            sub.hasOwnProperty("subselections")
-              ? ((sub.subselections = newsubs(
-                  sub.subselections,
-                  sub.permissions
-                )),
-                sub)
-              : sub)
-          : sub;
-      });
     };
 
-    let tempsub = (objlist, name) => {
-      name = objlist.filter((fil) => {
+    let catchSubselect = (objlist, obj) => {
+      return (obj = objlist.filter((fil) => {
         return fil.name === target.id ? fil : null;
-      });
-      return name[0];
+      })[0]);
     };
 
-    let childs = (objlist, name) => {
-      name = objlist.map((item) => {
-       name = item.subselections.filter((fil)=>{return fil.name === target.id? fil : null});
-       return name[0].hasOwnProperty("name")?  (name[0].name === target.id ? item : null): null})
-      return name[0]
+    let setSubselection = (objlist, obj) => {
+      return objlist.filter((fil) => {
+        return fil.name === obj.name ? (fil = obj) : fil;
+      });
     };
+
+    let setnewchild = (obj, childnew) => {
+      obj.subselections = obj.subselections.map((child) => {
+        return child.name === childnew.name ? (child = childnew) : child;
+      });
+      return obj;
+    };
+
+    let allchildsSelect = (obj) => {
+      obj.permissions[target.name] = obj.subselections.every((item) => {
+        return item.permissions[target.name] === true;
+      });
+      return obj;
+    };
+
     if (target.checked) {
       if (tempSelectionArray.name === target.id) {
-        tempSelectionArray.permissions = newpermissionskey(
-          target.name,
-          true,
-          tempSelectionArray.permissions
-        );
-        tempSelectionArray.subselections = newsubs(
-          tempSelectionArray.subselections,
-          tempSelectionArray.permissions
-        );
-      }
-
-      if(childs(tempSelectionArray.subselections).name === target.id){
-        console.log("ativou")
-      }
-
-      if (tempsub(tempSelectionArray.subselections).name === target.id) {
-        tempSelectionArray.subselections = tempSubSelection(
-          tempSelectionArray.subselections,
+        tempSelectionArray.subselections = setSubselectionPermissions(
+          tempSubselections,
           true
+        );
+        tempSelectionArray.permissions = setpermissions(
+          tempSelectionArray.permissions,
+          true
+        );
+      } else if (catchSubselect(tempSubselections)) {
+        let selectnow = catchSubselect(tempSubselections);
+        selectnow.permissions = setpermissions(selectnow.permissions, true);
+        tempSelectionArray = allchildsSelect(tempSelectionArray);
+        selectnow.subselections = setSubselectionPermissions(
+          selectnow.subselections,
+          true
+        );
+        tempSubselections = setSubselection(tempSubselections, selectnow);
+      } else if (catchSubselect(tempChilds.subselections)) {
+        let child = catchSubselect(tempChilds.subselections);
+        child.permissions = setpermissions(child.permissions, true);
+        tempSub = allchildsSelect(tempSub);
+        tempSubselections = setSubselection(
+          tempSubselections,
+          setnewchild(tempSub, child)
         );
       }
     } else {
       if (tempSelectionArray.name === target.id) {
-        tempSelectionArray.permissions = tempSelectionArray.permissions =
-          newpermissionskey(target.name, false, tempSelectionArray.permissions);
-        tempSelectionArray.subselections = newsubs(
-          tempSelectionArray.subselections,
-          tempSelectionArray.permissions
-        );
-      } else if (tempsub(tempSelectionArray.subselections).name === target.id) {
-        tempSelectionArray.subselections = tempSubSelection(
-          tempSelectionArray.subselections,
+        tempSelectionArray.subselections = setSubselectionPermissions(
+          tempSubselections,
           false
+        );
+        tempSelectionArray.permissions = setpermissions(
+          tempSelectionArray.permissions,
+          false
+        );
+      } else if (catchSubselect(tempSubselections)) {
+        let selectnow = catchSubselect(tempSubselections);
+        selectnow.permissions = setpermissions(selectnow.permissions, false);
+        tempSelectionArray = allchildsSelect(tempSelectionArray);
+        selectnow.subselections = setSubselectionPermissions(
+          selectnow.subselections,
+          false
+        );
+        tempSubselections = setSubselection(tempSubselections, selectnow);
+      } else if (catchSubselect(tempChilds.subselections)) {
+        let child = catchSubselect(tempChilds.subselections);
+        child.permissions = setpermissions(child.permissions, false);
+        tempSub = allchildsSelect(tempSub);
+        tempSubselections = setSubselection(
+          tempSubselections,
+          setnewchild(tempSub, child)
         );
       }
     }
-    setSelect(tempSelectionArray);
+
+    tempSelectionArray.subselections = tempSubselections;
     setRefresh(!refresh);
+    return setSelect(tempSelectionArray);
   }
 
   function GenerateCheckbox(target) {
@@ -282,6 +335,32 @@ const Permissions = () => {
     });
   }
 
+  function handleClickArrow(name) {
+    let newobj = collapsed;
+    if (collapsed[name]) {
+      Object.keys(newobj).filter((fil) => {
+        return fil === name
+          ? ((newobj[fil] = false), console.log(newobj))
+          : null;
+      });
+    } else if (!collapsed[name]) {
+      Object.keys(newobj).filter((fil) => {
+        return fil === name ? (newobj[fil] = true) : null;
+      });
+    }
+    setCollapsed(newobj);
+    setRefresh(!refresh)
+  }
+
+  function handleSubmit(){
+      select.subselections.map((item)=>{
+       console.log(item.name, item.permissions)
+       return item.subselections? item.subselections.map((sub)=>{return console.log(sub.name, sub.permissions)}) : null 
+      })
+
+  }
+
+
   if (select) {
     return (
       <PermissionsStyle className="container">
@@ -297,9 +376,7 @@ const Permissions = () => {
           <tbody>
             <tr className="selectionTitle">
               <td>
-                <div>
-                  {select.name} <Arrow />
-                </div>
+                <div>{select.name}</div>
               </td>
               {GenerateCheckbox(select)}
             </tr>
@@ -310,29 +387,31 @@ const Permissions = () => {
                     <td>
                       <div>
                         {select.name}
-                        <Arrow />
+                        <Arrow name={select.name} handleClickArrow={handleClickArrow} collapsed={collapsed} />
                       </div>
                     </td>
                     {GenerateCheckbox(select)}
                   </tr>
-                  {select.subselections.map((subselect, id) => {
-                    return (
-                      <tr key={id}>
-                        <td>{subselect.name}</td>
-                        {GenerateCheckbox(subselect)}
-                      </tr>
-                    );
-                  })}
+                  {collapsed[select.name]
+                    ? select.subselections.map((subselect, id) => {
+                        return (
+                          <tr key={id}>
+                            <td>{subselect.name}</td>
+                            {GenerateCheckbox(subselect)}
+                          </tr>
+                        );
+                      })
+                    : null}
                 </React.Fragment>
               );
             })}
           </tbody>
         </table>
-        <button>Cadastrar</button>
+        <Button text="Cadastrar" handleSubmit={handleSubmit} />
       </PermissionsStyle>
     );
   } else {
-    return <h2>Error</h2>;
+    return <h1>Error 404</h1>;
   }
 };
 
@@ -389,21 +468,6 @@ const PermissionsStyle = styled.section`
 
   .selectionSub {
     background-color: #f8f8f8;
-  }
-
-  button {
-    width: 200px;
-    height: 40px;
-    background-color: #6b7375;
-    border: none;
-    border-radius: 20px;
-    color: white;
-    font-size: 1.2rem;
-    transition: 0.5s;
-    cursor: pointer;
-    &:hover {
-      background-color: #494f50;
-    }
   }
 `;
 export default Permissions;
