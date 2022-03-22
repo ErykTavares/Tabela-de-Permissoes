@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
 import CheckBox from "../CheckBox";
 import Arrow from "../Arrow";
@@ -184,7 +184,7 @@ const Permissions = () => {
   React.useEffect(() => {
     setSelect(selectionarray);
     setCollapsed(obj);
-  });
+  },[]);
 
   function handleChange({ target }) {
     let tempSelectionArray = select;
@@ -193,7 +193,7 @@ const Permissions = () => {
       let obj;
       item.subselections.filter((fil) => {
         if (fil.name === target.id) {
-          obj = item;
+          return obj = item;
         } else {
           return null;
         }
