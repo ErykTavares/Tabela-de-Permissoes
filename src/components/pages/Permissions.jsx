@@ -450,6 +450,7 @@ const PermissionsStyle = styled.section`
 
   .selectionTitle {
     font-weight: bold;
+    background-color: #f9f9f9;
   }
 
   .selectionTitle:nth-child(1) {
